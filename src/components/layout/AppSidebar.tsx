@@ -29,6 +29,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Patients", url: "/patients", icon: Users },
   { title: "Consultations", url: "/consultations", icon: Stethoscope },
+  { title: "Rendez-vous", url: "/rendezvous", icon: Calendar },
   { title: "Facturation", url: "/facturation", icon: Receipt },
   { title: "Inventaire", url: "/inventaire", icon: Package },
   { title: "Rapports", url: "/rapports", icon: BarChart3 },
