@@ -21,6 +21,7 @@ import ArticleList from "@/pages/inventaire/ArticleList";
 import MouvementStockPage from "@/pages/inventaire/MouvementStockPage";
 import RendezVousList from "@/pages/rendezvous/RendezVousList";
 import Rapports from "@/pages/rapports/Rapports";
+import Settings from "@/pages/settings/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/inventaire/mouvements" element={<PrivateRoute><MouvementStockPage /></PrivateRoute>} />
             <Route path="/rendezvous" element={<PrivateRoute><RendezVousList /></PrivateRoute>} />
             <Route path="/rapports" element={<PrivateRoute><Rapports /></PrivateRoute>} />
+            <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
