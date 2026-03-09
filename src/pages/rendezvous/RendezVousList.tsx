@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MOCK_RENDEZVOUS, MOCK_PATIENTS, RendezVous } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Calendar, Clock, List } from "lucide-react";
+import { Search, Plus, Calendar, Clock, List, MoreHorizontal, CheckCircle, XCircle, Ban } from "lucide-react";
 
 const statutLabel: Record<string, string> = {
   confirme: "Confirmé",
@@ -38,10 +39,9 @@ export default function RendezVousList() {
     (r) => r.patient_nom.toLowerCase().includes(search.toLowerCase()) || r.motif.toLowerCase().includes(search.toLowerCase())
   );
 
-  const upcoming = filtered.filter((r) => r.statut === "confirme" || r.statut === "en_attente").sort((a, b) => a.date.localeCompare(b.date));
+  const upcoming = filtered.filter((r) => r.statut === "confirme" || r.statut === "en_attente").sort((a, b) => a.date.localeCompare(b.date) || a.heure.localeCompare(b.heure));
   const past = filtered.filter((r) => r.statut === "termine" || r.statut === "annule");
 
-  // Group by date for calendar-like view
   const groupedByDate = upcoming.reduce<Record<string, RendezVous[]>>((acc, r) => {
     if (!acc[r.date]) acc[r.date] = [];
     acc[r.date].push(r);
@@ -72,6 +72,43 @@ export default function RendezVousList() {
     toast({ title: "Rendez-vous créé" });
   };
 
+  const changeStatut = (id: number, statut: RendezVous["statut"]) => {
+    setRdvs((prev) => prev.map((r) => r.id === id ? { ...r, statut } : r));
+    toast({ title: `Rendez-vous ${statutLabel[statut].toLowerCase()}` });
+  };
+
+  const RDVActions = ({ rdv }: { rdv: RendezVous }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {rdv.statut === "en_attente" && (
+          <DropdownMenuItem onClick={() => changeStatut(rdv.id, "confirme")}>
+            <CheckCircle className="h-4 w-4 mr-2 text-primary" /> Confirmer
+          </DropdownMenuItem>
+        )}
+        {(rdv.statut === "confirme" || rdv.statut === "en_attente") && (
+          <>
+            <DropdownMenuItem onClick={() => changeStatut(rdv.id, "termine")}>
+              <CheckCircle className="h-4 w-4 mr-2 text-secondary" /> Marquer terminé
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => changeStatut(rdv.id, "annule")} className="text-destructive">
+              <XCircle className="h-4 w-4 mr-2" /> Annuler
+            </DropdownMenuItem>
+          </>
+        )}
+        {rdv.statut === "annule" && (
+          <DropdownMenuItem onClick={() => changeStatut(rdv.id, "en_attente")}>
+            <Ban className="h-4 w-4 mr-2" /> Remettre en attente
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -80,7 +117,7 @@ export default function RendezVousList() {
             <h1 className="font-display text-2xl font-bold flex items-center gap-2">
               <Calendar className="h-6 w-6 text-primary" /> Rendez-vous
             </h1>
-            <p className="text-muted-foreground text-sm">{upcoming.length} à venir</p>
+            <p className="text-muted-foreground text-sm">{upcoming.length} à venir · {past.length} passés</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -156,6 +193,7 @@ export default function RendezVousList() {
                             <p className="text-sm text-muted-foreground">{r.motif} · {r.duree} min</p>
                           </div>
                           <Badge variant={statutVariant(r.statut)}>{statutLabel[r.statut]}</Badge>
+                          <RDVActions rdv={r} />
                         </div>
                       ))}
                     </div>
@@ -173,6 +211,7 @@ export default function RendezVousList() {
                         <TableHead>Patient</TableHead>
                         <TableHead className="hidden md:table-cell">Motif</TableHead>
                         <TableHead>Statut</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -183,6 +222,7 @@ export default function RendezVousList() {
                           <TableCell className="font-medium">{r.patient_nom}</TableCell>
                           <TableCell className="hidden md:table-cell">{r.motif}</TableCell>
                           <TableCell><Badge variant={statutVariant(r.statut)}>{statutLabel[r.statut]}</Badge></TableCell>
+                          <TableCell className="text-right"><RDVActions rdv={r} /></TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

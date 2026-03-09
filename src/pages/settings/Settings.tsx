@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Clock, CreditCard, Bell, Shield } from "lucide-react";
+import { Building2, Clock, CreditCard, Bell, Shield, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface CabinetSettings {
@@ -105,6 +105,15 @@ export default function Settings() {
     mention_legale_facture: "Payable à réception. Tout retard de paiement entraînera des pénalités.",
   });
 
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+
   const handleSave = (section: string) => {
     toast({ title: "Enregistré", description: `Les ${section} ont été mis à jour avec succès.` });
   };
@@ -117,6 +126,34 @@ export default function Settings() {
     setHoraires((prev) => prev.map((h, i) => (i === index ? { ...h, [field]: value } : h)));
   };
 
+  const handlePasswordChange = async () => {
+    if (!currentPassword) {
+      toast({ title: "Mot de passe actuel requis", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast({ title: "Le nouveau mot de passe doit contenir au moins 8 caractères", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Les mots de passe ne correspondent pas", variant: "destructive" });
+      return;
+    }
+    if (newPassword === currentPassword) {
+      toast({ title: "Le nouveau mot de passe doit être différent de l'actuel", variant: "destructive" });
+      return;
+    }
+
+    setChangingPassword(true);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setChangingPassword(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    toast({ title: "Mot de passe modifié", description: "Votre mot de passe a été changé avec succès." });
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -126,12 +163,13 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="cabinet" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto">
-            <TabsTrigger value="cabinet" className="gap-2"><Building2 className="h-4 w-4" />Cabinet</TabsTrigger>
-            <TabsTrigger value="tarifs" className="gap-2"><CreditCard className="h-4 w-4" />Tarifs</TabsTrigger>
-            <TabsTrigger value="horaires" className="gap-2"><Clock className="h-4 w-4" />Horaires</TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2"><Bell className="h-4 w-4" />Notifications</TabsTrigger>
-            <TabsTrigger value="facturation" className="gap-2"><Shield className="h-4 w-4" />Facturation</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto">
+            <TabsTrigger value="cabinet" className="gap-2"><Building2 className="h-4 w-4" /><span className="hidden sm:inline">Cabinet</span></TabsTrigger>
+            <TabsTrigger value="tarifs" className="gap-2"><CreditCard className="h-4 w-4" /><span className="hidden sm:inline">Tarifs</span></TabsTrigger>
+            <TabsTrigger value="horaires" className="gap-2"><Clock className="h-4 w-4" /><span className="hidden sm:inline">Horaires</span></TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2"><Bell className="h-4 w-4" /><span className="hidden sm:inline">Notifications</span></TabsTrigger>
+            <TabsTrigger value="facturation" className="gap-2"><Shield className="h-4 w-4" /><span className="hidden sm:inline">Facturation</span></TabsTrigger>
+            <TabsTrigger value="securite" className="gap-2"><Lock className="h-4 w-4" /><span className="hidden sm:inline">Sécurité</span></TabsTrigger>
           </TabsList>
 
           {/* ─── CABINET ─── */}
@@ -362,6 +400,123 @@ export default function Settings() {
 
                 <div className="flex justify-end">
                   <Button onClick={() => handleSave("paramètres de facturation")}>Enregistrer</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ─── SÉCURITÉ ─── */}
+          <TabsContent value="securite">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-primary" />Changer le mot de passe</CardTitle>
+                <CardDescription>Modifiez le mot de passe de votre compte. Le mot de passe doit contenir au moins 8 caractères.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 max-w-md">
+                <div className="space-y-2">
+                  <Label>Mot de passe actuel</Label>
+                  <div className="relative">
+                    <Input
+                      type={showCurrentPwd ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowCurrentPwd(!showCurrentPwd)}
+                    >
+                      {showCurrentPwd ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    </Button>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label>Nouveau mot de passe</Label>
+                  <div className="relative">
+                    <Input
+                      type={showNewPwd ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowNewPwd(!showNewPwd)}
+                    >
+                      {showNewPwd ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    </Button>
+                  </div>
+                  {newPassword && newPassword.length < 8 && (
+                    <p className="text-xs text-destructive">Minimum 8 caractères requis</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Confirmer le nouveau mot de passe</Label>
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPwd ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowConfirmPwd(!showConfirmPwd)}
+                    >
+                      {showConfirmPwd ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    </Button>
+                  </div>
+                  {confirmPassword && newPassword !== confirmPassword && (
+                    <p className="text-xs text-destructive">Les mots de passe ne correspondent pas</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={handlePasswordChange}
+                    disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+                  >
+                    {changingPassword ? "Modification..." : "Changer le mot de passe"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Informations du compte</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <p className="text-sm font-medium">Email du compte</p>
+                    <p className="text-sm text-muted-foreground">{user?.email || "—"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <p className="text-sm font-medium">Rôle</p>
+                    <p className="text-sm text-muted-foreground">{user?.role || "—"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <p className="text-sm font-medium">Cabinet</p>
+                    <p className="text-sm text-muted-foreground">{user?.cabinet || "—"}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
