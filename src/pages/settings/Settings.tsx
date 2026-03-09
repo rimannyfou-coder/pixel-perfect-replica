@@ -10,9 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Clock, CreditCard, Bell, Shield, Palette } from "lucide-react";
+import { Building2, Clock, CreditCard, Bell, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { TYPES_TRAITEMENT } from "@/data/mockData";
 
 interface CabinetSettings {
   nom: string;

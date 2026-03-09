@@ -52,6 +52,7 @@ const App = () => (
             <Route path="/inventaire/mouvements" element={<PrivateRoute><MouvementStockPage /></PrivateRoute>} />
             <Route path="/rendezvous" element={<PrivateRoute><RendezVousList /></PrivateRoute>} />
             <Route path="/rapports" element={<PrivateRoute><Rapports /></PrivateRoute>} />
+            <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
